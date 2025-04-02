@@ -9,13 +9,26 @@ import (
 
 // A LinkElement is used to render hyperlinks.
 type LinkElement struct {
-	BaseURL  string
-	URL      string
-	Children []ElementRenderer
+	BaseURL    string
+	URL        string
+	Children   []ElementRenderer
+	IsAutoLink bool
 }
 
 // Render renders a LinkElement.
 func (e *LinkElement) Render(w io.Writer, ctx RenderContext) error {
+	if !e.IsAutoLink {
+		if err := e.renderTextPart(w, ctx); err != nil {
+			return err
+		}
+	}
+	if err := e.renderHrefPart(w, ctx); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (e *LinkElement) renderTextPart(w io.Writer, ctx RenderContext) error {
 	for _, child := range e.Children {
 		if r, ok := child.(StyleOverriderElementRenderer); ok {
 			st := ctx.options.Styles.LinkText
@@ -36,7 +49,10 @@ func (e *LinkElement) Render(w io.Writer, ctx RenderContext) error {
 			}
 		}
 	}
+	return nil
+}
 
+func (e *LinkElement) renderHrefPart(w io.Writer, ctx RenderContext) error {
 	u, err := url.Parse(e.URL)
 	if err == nil && "#"+u.Fragment != e.URL { // if the URL only consists of an anchor, ignore it
 		el := &BaseElement{
@@ -48,6 +64,5 @@ func (e *LinkElement) Render(w io.Writer, ctx RenderContext) error {
 			return err
 		}
 	}
-
 	return nil
 }

@@ -256,9 +256,10 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 
 		return Element{
 			Renderer: &LinkElement{
-				Children: children,
-				BaseURL:  ctx.options.BaseURL,
-				URL:      u,
+				Children:   children,
+				BaseURL:    ctx.options.BaseURL,
+				URL:        u,
+				IsAutoLink: n.AutoLinkType != ast.AutoLinkEmail,
 			},
 		}
 
